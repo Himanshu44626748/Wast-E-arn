@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <title>WastEarn</title>
+    
+    <style>
+        #city{
+            width: 80%;
+            background-color: white;
+            border-bottom: 2px solid #9d9fa1;
+        }
+        #check{
+            width: 30%;
+        }
+        @media only screen and (max-width: 600px)
+        {
+            #second{
+                margin-top: 5%;
+                margin-bottom: 5%;
+            }
+            #check{
+                margin-left: 28%;
+            }
+        }
+        table{
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 5%;
+            margin-bottom: 5%;
+            text-align: left;
+        }
+        th{
+            padding-top: 1%;
+            padding-bottom: 1%;
+            color: white;
+            background-color: #4CAF50;
+        }
+        td{
+            padding-top: 1%;
+            padding-bottom: 1%;
+        }
+        tr:nth-child(even){
+            background-color: #f2f2f2;
+        }
+        tr:hover{
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    
+    {{> header}}
+
+    <div class="container" >
+
+        <form action="/org" method="POST" class="form-inline" style="margin-left: 15%;">
+            <div class="col-md-8" style="margin-right: 0; padding-right: 0;">
+                <input type="text" placeholder="Enter city name" name="city" id="city">
+            </div>
+            <div id="second" class="col-md-4" style="margin-left: 0; padding-left: 0;">
+                <input type="submit" class="btn btn-success" id="check" value="Check" />
+            </div>
+        </form>
+
+        {{#if org}}
+        <div class="container table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Organisation</th>
+                        <th>Description</th>
+                        <th>City</th>
+                        <th>Contacts</th>
+                    </tr>
+                </thead>
+
+                {{#each org}}
+                <tbody>
+                    <tr class="orgList">
+                        <td>{{this.orgName}}</td>
+                        <td>{{this.description}}</td>
+                        <td>{{this.city}}</td>
+                        <td>{{this.email}},  {{this.phone}}</td>
+                    </tr>
+                </tbody>
+                {{/each}}
+
+            </table>
+        </div>
+
+        {{else}}
+        <h5 class="text-danger" style="text-align: center; margin-top: 10%; margin-bottom: 10%">
+            {{msg}}
+        </h5>
+        {{/if}}
+    </div>
+
+    {{>footer}}
+
+</body>
+</html>
