@@ -157,7 +157,7 @@ app.post("/sell", upload, async (req, res) => {
             description: req.body.description,
             email: req.body.email,
             phone: req.body.phone,
-            status: `Processing at ${orgCity[0].orgName}`,
+            status: `Waiting for buyer`,
             img: req.file.filename
         })
         const userName = req.body.name;
@@ -243,6 +243,43 @@ app.post("/org", async (req, res) => {
     //console.log(t[0].orgName);
 
 });
+
+app.get("/checkStatus", (req, res) => {
+    res.render("checkStatus");
+});
+
+app.post("/checkStatus", async (req, res) => {
+
+    try{
+
+        let wasteId = req.body.id;
+
+        let data = await seller.find({wasteId: wasteId});
+
+        //console.log(data);
+
+        if(data.length == 1)
+        {
+            res.render("checkStatus", {
+                msg: `Current Status - ${data[0].status}`
+            })
+        }
+        else{
+            res.render("checkStatus", {
+                error: `No waste found`
+            })
+        }
+
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+})
+
+app.get("/updateStatus", (req, res) => {
+    res.render("updateStatus");
+})
 
 app.listen(port, () => {
     console.log("Server is running on port number 8000");
