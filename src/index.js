@@ -7,15 +7,26 @@ const bodyParser = require("body-parser");
 const app = express();
 const multer = require("multer");
 const data = require("./organisation");
+const users = require('./users');
+const auth = require('./auth');
+const profile = require('./profile');
+const connectDB = require('../config/db');
 const { Z_BLOCK } = require("zlib");
 const port = process.env.PORT || 8000;
 
-mongoose.connect("mongodb+srv://himanshu446267:44626748@cluster0.76uy4.mongodb.net/himanshu?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect("mongodb+srv://himanshu446267:44626748@cluster0.76uy4.mongodb.net/himanshu?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true})
 .then(() => {
     console.log("Connected to database");
 }).catch((error) => {
     console.log(error);
 });
+
+connectDB();
+
+//Init middlewares
+app.use(express.json({
+    extented : false
+}))
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -90,6 +101,24 @@ app.get("/org", (req, res) => {
         st: "none"
     });
 })
+
+// app.get("/api/auth", (req, res) => {
+//     res.render("login");
+// })
+app.get('/login', (req, res) => {
+    res.render('login');
+})
+
+app.get('/signup', (req, res) => {
+    res.render('signup');
+})
+// app.get('/signup', (req, res) => {
+//     res.render('E:\\Wast-E-arn\\views\\sign\\index');
+// })
+
+app.use('/signup', users)
+app.use('/login', auth);
+app.use('/api/profile', profile);
 
 app.post("/company", async (req, res) => {
 
