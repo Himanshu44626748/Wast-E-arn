@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
+//For registering user
 router.post('/', [
     check('name', 'Name is required').not().isEmpty(),
     check('email', 'Please enter a valid email').isEmail(),

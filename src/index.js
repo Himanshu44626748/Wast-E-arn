@@ -103,9 +103,7 @@ app.get("/org", (req, res) => {
     });
 })
 
-// app.get("/api/auth", (req, res) => {
-//     res.render("login");
-// })
+
 app.get('/login', (req, res) => {
     res.render('login');
 })
@@ -113,13 +111,14 @@ app.get('/login', (req, res) => {
 app.get('/signup', (req, res) => {
     res.render('signup');
 })
-// app.get('/signup', (req, res) => {
-//     res.render('E:\\Wast-E-arn\\views\\sign\\index');
-// })
+
+app.get('/profile', (req, res) => {
+    res.render('profile');
+})
 
 app.use('/signup', users)
 app.use('/login', auth);
-app.use('/api/profile', profile);
+app.use('/profile', profile);
 
 app.post("/company", async (req, res) => {
 
