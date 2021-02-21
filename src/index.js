@@ -8,6 +8,7 @@ const app = express();
 const multer = require("multer");
 const data = require("./organisation");
 const { Z_BLOCK } = require("zlib");
+const { getMaxListeners } = require("process");
 const port = process.env.PORT || 8000;
 
 mongoose.connect("mongodb+srv://himanshu446267:44626748@cluster0.76uy4.mongodb.net/himanshu?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true})
@@ -152,17 +153,16 @@ app.post("/sell", upload, async (req, res) => {
 
         const newSeller = new seller({
             wasteId: id,
-            name: req.body.name,
-            city: req.body.city,
-            description: req.body.description,
+            name: req.body.name.toLowerCase(),
+            city: req.body.city.toLowerCase(),
+            description: req.body.description.toLowerCase(),
             email: req.body.email,
             phone: req.body.phone,
-            status: `Waiting for buyer`,
+            status: `Waiting for buyer`.toLowerCase(),
             img: req.file.filename
         })
         const userName = req.body.name;
         // Data = userName;
-        
         
         const result = await newSeller.save();
 
@@ -210,6 +210,7 @@ app.post("/sell", upload, async (req, res) => {
         }
     }catch(error){
 
+        console.log(error);
         res.render("form", {
             failMsg: "Service is currently not available in your city"
         });
@@ -261,12 +262,14 @@ app.post("/checkStatus", async (req, res) => {
         if(data.length == 1)
         {
             res.render("checkStatus", {
-                msg: `Current Status - ${data[0].status}`
+                msg: `Current Status - ${data[0].status}`,
+                id: req.body.id
             })
         }
         else{
             res.render("checkStatus", {
-                error: `No waste found`
+                error: `No waste found`,
+                id: req.body.id
             })
         }
 
@@ -279,7 +282,90 @@ app.post("/checkStatus", async (req, res) => {
 
 app.get("/updateStatus", (req, res) => {
     res.render("updateStatus");
-})
+});
+
+app.post("/updateStatus", async (req, res) => {
+
+    var id = req.body.id;
+    var status = req.body.status;
+
+    let data = await seller.find({wasteId: id});
+    if(data.length == 1)
+    {
+        await seller.updateOne({wasteId: id}, {status: status});
+
+        res.render("updateStatus", {
+            msg: "Updated"
+        });
+        
+    }
+    else{
+        res.render("updateStatus", {
+            error: "Wrong waste id"
+        });
+    }
+    
+
+});
+
+app.get("/orgHome", async(req, res) => {
+
+    var data = await seller.find({});
+
+    //console.log(data);
+
+    res.render("organisationHome", {
+        data: data
+    });
+});
+
+app.post("/orgHome", async(req, res) => {
+
+    try{
+
+        var filter = req.body.filter.toLowerCase();
+
+        if(filter === "bio" || filter === "metal" || filter === "plastic" || filter === "paper")
+        {
+            var data = await seller.find({description: filter});
+
+            if(data.length == 0)
+            {
+                res.render("organisationHome", {
+                    msg: "No Waste Found"
+                });
+            }
+
+            else{
+                res.render("organisationHome", {
+                    data: data
+                });
+            }
+        }
+        else{
+            var data = await seller.find({city: filter});
+
+            if(data.length == 0)
+            {
+                res.render("organisationHome", {
+                    msg: "No Waste Found"
+                });
+            }
+
+            else{
+                res.render("organisationHome", {
+                    data: data
+                });
+            }
+        }
+
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+
+});
 
 app.listen(port, () => {
     console.log("Server is running on port number 8000");

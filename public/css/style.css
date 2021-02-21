@@ -48,24 +48,24 @@ footer .content a:hover{
 footer .ftr{
     flex-basis: 18%;
 }
-form{
+#footerForm{
     display: flex;
     align-items: center;
     width: 100%;
 }
-input{
+#subscribe, #footerMail{
     border: none;
     outline: none;
     padding: 10px;
     margin: 5px 0;
     background: black;
 }
-.btn input{
+.btn #subscribe{
     background: blueviolet;
     color: black;
     transition: .3s ease background;
 }
-.btn input:hover{
+.btn #subscribe:hover{
     background: rgb(23, 193, 216);
 }
 @media only screen and (max-width: 540px){
@@ -81,3 +81,7 @@ input{
         margin: 5px auto;
     }
 } 
+
+.navbar-nav li:hover .dropdown-menu {
+    display: block;
+}

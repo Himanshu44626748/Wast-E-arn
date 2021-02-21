@@ -15,20 +15,19 @@
     <style>
         #city{
             width: 80%;
-            background-color: white;
+            background-color: white !important;
             border-bottom: 2px solid #9d9fa1;
-        }
-        #check{
-            width: 30%;
         }
         @media only screen and (max-width: 600px)
         {
-            #second{
-                margin-top: 5%;
-                margin-bottom: 5%;
+           #city{
+                width: 100% !important;
             }
             #check{
-                margin-left: 28%;
+                width: 30%;
+            }
+            .div{
+                padding-left: 0 !important;
             }
         }
         table{
@@ -62,14 +61,13 @@
 
     <div class="container" >
 
-        <form action="/org" method="POST" class="form-inline" style="margin-left: 15%;">
-            <div class="col-md-8" style="margin-right: 0; padding-right: 0;">
-                <input type="text" placeholder="Enter city name" name="city" id="city">
-            </div>
-            <div id="second" class="col-md-4" style="margin-left: 0; padding-left: 0;">
-                <input type="submit" class="btn btn-success" id="check" value="Check" />
-            </div>
-        </form>
+        <div class="div container my-4" style="padding-left: 25%;">
+            <form action="/org" method="POST" class="form-inline" >
+                <input type="text" class="form-control mb-2 mr-sm-4" style="width: 50%;" name="city" id="city" placeholder="Enter city name" required>
+                    
+                <input type="submit" class="btn btn-success mb-2" id="check" value="Check" />
+            </form>
+        </div>
 
         {{#if org}}
         <div class="container table-responsive">
