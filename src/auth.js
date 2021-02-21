@@ -7,6 +7,7 @@ const config = require('config');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 
+//Authenticate the token and show profile 
 router.get('/', auth, async (req, res) => {
 
     try {
