@@ -79,7 +79,7 @@
 
                             <p>{{this.phone}}, {{this.email}}</p>
                             
-                            <button type="button" class="btn btn-success btn-md">Collect</button>
+                            <a type="button" class="btn btn-success btn-md" onclick="myFunction({{this.wasteId}})">Collect</a>
 
                         </div>
                     </div>
@@ -93,6 +93,23 @@
     </div>
 
 {{> footer}}
+
+<script>
+
+    function myFunction(id)
+    {
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/changeStatus", true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({
+            wasteId: id
+        }));
+
+        console.log(id);
+    }
+
+</script>
 
 </body>
 </html>
