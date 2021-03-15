@@ -2,6 +2,7 @@
 <html>
 <head>
     <link rel="stylesheet" href="css/login.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -18,15 +19,19 @@
 </head>
 <body>
 
-  <div class="main">
-    <div class="extra">
+{{> header}}
 
-    {{> header}}
+  <div class="container">
+    <div class="main">
+    <div class="extra">
     </div>
     
 <div class="login-page">
+
+  <h5 class="text-danger" style="text-align: center;">{{msg}}</h5>
+
   <div class="form">
-    <form class="register-form" action="/signup" method="POST">
+    <form class="register-form" action="/login" method="POST">
       <input type="text" placeholder="Name" name="name"/>
       <input type="password" placeholder="Password" name="password"/>
       <input type="text" placeholder="Email address" name="email"/>
@@ -49,8 +54,9 @@
 
 
 </div>
+  </div>
 
-'{{>footer}}'
+{{>footer}}
 
 </body>
 <script>

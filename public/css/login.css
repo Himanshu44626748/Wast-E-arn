@@ -5,9 +5,6 @@
   padding: 8% 0 0;
   margin: auto;
 }
-.extra{
-    background-color: #ffffff;
-}
 .form {
   position: relative;
   z-index: 1;
@@ -90,15 +87,4 @@
 }
 .container .info span .fa {
   color: #EF3B3A;
-}
-body {
-  background: #76b852; /* fallback for old browsers */
-  /* background: -webkit-linear-gradient(right, #76b852, #8DC26F);
-  background: -moz-linear-gradient(right, #76b852, #8DC26F);
-  background: -o-linear-gradient(right, #76b852, #8DC26F);
-  background: linear-gradient(to left, #76b852, #8DC26F); */
-  background: -webkit-linear-gradient(left, #069754, #32eb9e);
-  font-family: "Roboto", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;      
 }

@@ -13,6 +13,7 @@ const profile = require('./profile');
 const connectDB = require('../config/db');
 const { Z_BLOCK } = require("zlib");
 const { getMaxListeners } = require("process");
+const bcrypt = require("bcryptjs");
 const port = process.env.PORT || 8000;
 
 mongoose.connect("mongodb+srv://himanshu446267:44626748@cluster0.76uy4.mongodb.net/himanshu?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true})
@@ -56,6 +57,16 @@ const buyerSchema = new mongoose.Schema({
     phone: Number
 });
 
+const userSchema = new mongoose.Schema({
+    name: String,
+    password: String,
+    email: String,
+    phone: Number,
+    address: String,
+    city: String,
+    pincode: Number
+})
+
 var storage = multer.diskStorage({
     destination: "./public/uploads/",
     filename: (req, file, cb) => {
@@ -67,6 +78,7 @@ const upload = multer({storage: storage}).single("image");
 
 const seller = new mongoose.model("Seller", sellerSchema);
 const buyer = new mongoose.model("Buyer", buyerSchema);
+const user = new mongoose.model("User", userSchema);
 
 app.use(bodyParser.urlencoded({extended: false}));
 
@@ -102,23 +114,6 @@ app.get("/org", (req, res) => {
         st: "none"
     });
 })
-
-
-app.get('/login', (req, res) => {
-    res.render('login');
-})
-
-app.get('/signup', (req, res) => {
-    res.render('signup');
-})
-
-app.get('/profile', (req, res) => {
-    res.render('profile');
-})
-
-app.use('/signup', users)
-app.use('/login', auth);
-app.use('/profile', profile);
 
 app.post("/company", async (req, res) => {
 
@@ -338,7 +333,9 @@ app.post("/updateStatus", async (req, res) => {
 
 app.get("/orgHome", async(req, res) => {
 
-    var data = await seller.find({});
+    var status = 'waiting for buyer';
+
+    var data = await seller.find({status: status});
 
     //console.log(data);
 
@@ -353,9 +350,13 @@ app.post("/orgHome", async(req, res) => {
 
         var filter = req.body.filter.toLowerCase();
 
+        var status = 'waiting for buyer';
+
         if(filter === "bio" || filter === "metal" || filter === "plastic" || filter === "paper")
         {
-            var data = await seller.find({description: filter});
+            var data = await seller.find({status: status, description: filter});
+
+            //console.log(filter);
 
             if(data.length == 0)
             {
@@ -371,8 +372,10 @@ app.post("/orgHome", async(req, res) => {
             }
         }
         else{
-            var data = await seller.find({city: filter});
+            var data = await seller.find({status: status, city: filter});
 
+            //console.log(filter);
+            
             if(data.length == 0)
             {
                 res.render("organisationHome", {
@@ -396,7 +399,86 @@ app.post("/orgHome", async(req, res) => {
 });
 
 app.post("/changeStatus", async(req, res) => {
-    console.log(req.wasteId);
+
+    var data = await seller.find({wasteId: wasteId});
+
+    //await seller.updateOne({wasteId: wasteId}, {status: `${data[0].}`});
+
+});
+
+app.get("/signup", (req, res) => {
+    res.render("signup");
+});
+
+app.post("/signup", async(req, res) => {
+
+    try {
+
+        pass = await bcrypt.hash(req.body.password, 10);
+
+        const newUser = new user({
+            name: req.body.name,
+            password: pass,
+            email: req.body.email,
+            phone: req.body.phone,
+            address: req.body.address,
+            city: req.body.city,
+            pincode: req.body.pincode
+        });
+
+        const userData = await newUser.save();
+
+        res.render("profile");
+        
+    } catch (error) {
+        console.log(error)
+    }
+
+});
+
+app.get("/login", (req, res) => {
+    res.render("login");
+});
+
+app.post("/login", async (req, res) => {
+
+    try{
+        var email = req.body.email;
+        var password = req.body.password;
+
+        var data = await user.findOne({email});
+
+        //console.log(data);
+
+        if(data)
+        {
+            var hash = await bcrypt.compare(password, data.password, (err, resp) => {
+
+                if(resp == true)
+                {
+                    console.log("Password match");
+                    res.render("profile");
+                }
+                else{
+                    console.log("Password not match");
+                    res.render("login", {
+                        msg: "Incorrect Password"
+                    });
+                }
+            });
+        }
+        else{
+            res.render("login", {
+                msg: "Invalid email"
+            })
+        }
+        //console.log(hash);
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+
 })
 
 app.listen(port, () => {

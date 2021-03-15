@@ -2,6 +2,7 @@
 <html>
 <head>
     <link rel="stylesheet" href="css/login.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -18,14 +19,18 @@
 </head>
 <body>
 
-  <div class="main">
+
+{{> header}}
+
+  <div class="container">
+    <div class="main">
     <div class="extra">
 
-    {{> header}}
+    
     </div>
     
 <div class="login-page">
-  <div class="form">
+  <div class="form" style="width">
     <form class="login-form" action="/signup" method="POST">
       <input type="text" placeholder="Name" name="name"/>
       <input type="password" placeholder="Password" name="password"/>
@@ -47,8 +52,13 @@
   </div>
 </div>
 
-{{>footer}}
+
 </div>
+
+  </div>
+
+{{>footer}}
+
 </body>
 <script>
 
