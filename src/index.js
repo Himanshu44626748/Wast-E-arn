@@ -96,9 +96,7 @@ app.get("/", (req, res) => {
     res.render("recyclepage");
 });
 
-app.get("/sell", (req, res) => {
-    res.render("form");
-});
+
 
 
 app.get("/company", (req, res) => {
@@ -147,98 +145,6 @@ app.post("/company", async (req, res) => {
 })
 
 var match = false;
-
-// const Data = null;
-app.post("/sell", upload, async (req, res) => {
-    
-    try{
-
-        let id;
-
-        let data = await seller.find({});
-        const orgCity = await buyer.find({city: req.body.city});
-
-        if(data.length == 0)
-        {
-            id = 1111;
-        }
-        else{
-            let max = data[0].wasteId;
-            for(i=1;i<data.length;i++)
-            {
-                if(max < data[i].wasteId)
-                {
-                    max = data[i].wasteId;
-                }
-            }
-            id = max+1;
-        }
-
-        const newSeller = new seller({
-            wasteId: id,
-            name: req.body.name.toLowerCase(),
-            city: req.body.city.toLowerCase(),
-            description: req.body.description.toLowerCase(),
-            email: req.body.email,
-            phone: req.body.phone,
-            status: `Waiting for buyer`.toLowerCase(),
-            img: req.file.filename
-        })
-        const userName = req.body.name;
-        // Data = userName;
-        
-        const result = await newSeller.save();
-
-        //console.log(orgCity);
-    
-        if(orgCity[0].city)
-        {
-        
-            const orgMail = {
-                from: req.body.email,
-                to: orgCity[0].email,
-                subject: `${id} Waste Found`,
-                text: `${req.body.name} is selling their waste(waste id - ${id}) please collect it from ${req.body.city}. His contact number is - ${req.body.phone} and Email id is - ${req.body.email}`
-            }
-
-            const sellerMail = {
-                from: req.body.email,
-                to: req.body.email,
-                subject: "Thank you for recycling your waste",
-                text: `Dear ${req.body.name} thank you for recycling. Your waste id is ${id}`
-            }
-    
-            console.log("Data successfully inserted");
-    
-            res.render("form", {
-                successMsg: "Thank you for recycling your waste"
-            });
-
-            transporter.sendMail(sellerMail, (error, info) => {
-                if(error){
-                    console.log(error)
-                }
-                else{
-                    console.log("Mail sended to seller");
-                }
-            })
-            
-            transporter.sendMail(orgMail, (error, info) => {
-                if(error){
-                    console.log(error);
-                }else{
-                    console.log("Mail sended to organisation");
-                }
-            })
-        }
-    }catch(error){
-
-        console.log(error);
-        res.render("form", {
-            failMsg: "Service is currently not available in your city"
-        });
-    }
-});
 
 app.post("/org", async (req, res) => {
 
@@ -427,8 +333,18 @@ app.post("/signup", async(req, res) => {
         });
 
         const userData = await newUser.save();
-
-        res.render("profile");
+        var name = userData.name;
+        var address = userData.address;
+        var city = userData.city;
+        var pincode = userData.pincode;
+        var email = userData.email;
+        res.render("profile", {
+            n: name,
+            add: address,
+            ci : city,
+            pin: pincode,
+            em: email
+        });
         
     } catch (error) {
         console.log(error)
@@ -453,11 +369,21 @@ app.post("/login", async (req, res) => {
         if(data)
         {
             var hash = await bcrypt.compare(password, data.password, (err, resp) => {
-
+                var name = data.name;
+                var address = data.address;
+                var city = data.city;
+                var pincode = data.pincode;
+                var email = data.email;
                 if(resp == true)
                 {
                     console.log("Password match");
-                    res.render("profile");
+                    res.render("profile", {
+                        n: name,
+                        add: address,
+                        ci : city,
+                        pin: pincode,
+                        em: email
+                    });
                 }
                 else{
                     console.log("Password not match");
@@ -479,7 +405,63 @@ app.post("/login", async (req, res) => {
         console.log(error);
     }
 
-})
+});
+
+app.get("/sell", (req, res) => {
+    res.render("form");
+});
+
+app.post("/sell", async (req, res) => {
+    
+    try{
+
+        let id;
+
+        let data = await seller.find({});
+        var userData = await user.findOne({email});
+
+        if(data.length == 0)
+        {
+            id = 1111;
+        }
+        else{
+            let max = data[0].wasteId;
+            for(i=1;i<data.length;i++)
+            {
+                if(max < data[i].wasteId)
+                {
+                    max = data[i].wasteId;
+                }
+            }
+            id = max+1;
+        }
+
+        const newSeller = new seller({
+            wasteId: id,
+            name: userData.name,
+            city: userData.city,
+            description: req.body.description.toLowerCase(),
+            email: userData.email,
+            phone: userData.phone,
+            status: `Waiting for buyer`.toLowerCase(),
+            img: req.file.filename
+        })
+        
+        const result = await newSeller.save();
+        console.log("Data successfully inserted");
+
+        res.render("form", {
+            successMsg: "Thank you for recycling your waste"
+        });
+    
+    }catch(error){
+
+        console.log(error);
+        res.render("form", {
+            failMsg: "Service is currently not available in your city"
+        });
+    }
+});
 
 app.listen(port, () => {
     console.log("Server is running on port number 8000");

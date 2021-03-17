@@ -19,7 +19,7 @@ async (req, res) => {
         return res.status(400).json({errors: errors})
     }
 
-    const { name, email, password} = req.body;
+    const { name, email, password, pincode, city, address} = req.body;
 
     try {
         //see if user exists
@@ -40,7 +40,10 @@ async (req, res) => {
             name,
             email,
             avatar,
-            password
+            password,
+            pincode,
+            city,
+            address
         })
 
         //encrypt password
