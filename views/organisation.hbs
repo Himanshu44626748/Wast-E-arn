@@ -57,7 +57,11 @@
 </head>
 <body>
     
-    {{> header}}
+    {{#if loggedin}}
+      {{>userHeader}}
+    {{else}}
+      {{>header}}
+    {{/if}}
 
     <div class="container" >
 

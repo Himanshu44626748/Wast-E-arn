@@ -8,4 +8,4 @@ const buyerSchema = new mongoose.Schema({
     phone: Number
 });
 
-module.exports = Buyer = mongoose.model('buyer', buyerSchema);
+module.exports = buyer = mongoose.model('buyer', buyerSchema);

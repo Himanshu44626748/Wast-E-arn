@@ -6,14 +6,18 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const app = express();
 const multer = require("multer");
-const data = require("./organisation");
-const users = require('./users');
-const auth = require('./auth');
+const buyer = require("../models/organisation");
+const user = require('../models/user');
+const seller = require('../models/seller');
 const profile = require('./profile');
+const auth = require('../middleware/auth');
 const connectDB = require('../config/db');
 const { Z_BLOCK } = require("zlib");
 const { getMaxListeners } = require("process");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require('dotenv').config();
+var cookieParser = require('cookie-parser')
 const port = process.env.PORT || 8000;
 
 mongoose.connect("mongodb+srv://himanshu446267:44626748@cluster0.76uy4.mongodb.net/himanshu?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true})
@@ -38,35 +42,6 @@ const transporter = nodemailer.createTransport({
     }
 })
 
-const sellerSchema = new mongoose.Schema({
-    wasteId: Number,
-    name: String,
-    city: String,
-    description: String,
-    email: String,
-    phone: Number,
-    status: String,
-    img: String
-});
-
-const buyerSchema = new mongoose.Schema({
-    orgName: String,
-    city: String,
-    description: String,
-    email: String,
-    phone: Number
-});
-
-const userSchema = new mongoose.Schema({
-    name: String,
-    password: String,
-    email: String,
-    phone: Number,
-    address: String,
-    city: String,
-    pincode: Number
-})
-
 var storage = multer.diskStorage({
     destination: "./public/uploads/",
     filename: (req, file, cb) => {
@@ -76,14 +51,11 @@ var storage = multer.diskStorage({
 
 const upload = multer({storage: storage}).single("image");
 
-const seller = new mongoose.model("Seller", sellerSchema);
-const buyer = new mongoose.model("Buyer", buyerSchema);
-const user = new mongoose.model("User", userSchema);
-
 app.use(bodyParser.urlencoded({extended: false}));
 
 const public = path.join(__dirname, "../public");
 app.use(express.static(public));
+app.use(cookieParser())
 
 const views = path.join(__dirname, "../views");
 app.set("views", views);
@@ -92,25 +64,88 @@ app.set("view engine", "hbs");
 const partial = path.join(__dirname, "../partials");
 hbs.registerPartials(partial);
 
-app.get("/", (req, res) => {
-    res.render("recyclepage");
+app.get("/", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
+        
+        res.render("recyclepage", {
+            n: data.name,
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("recyclepage");
+    }
 });
 
-
+app.get("/sell", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
+        res.render("form", {
+            n: data.name,
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("form", {
+            loggedin: false
+        });
+    }
+});
 
 
 app.get("/company", (req, res) => {
-    res.render("company");
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        res.render("company", {
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("company", {
+            loggedin: false
+        });
+    }
 });
 
 app.get("/buy", (req, res) => {
-    res.render("buy");
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        res.render("buy", {
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("buy", {
+            loggedin: false
+        });
+    }
 })
 
-app.get("/org", (req, res) => {
-    res.render("organisation", {
-        st: "none"
-    });
+app.get("/org", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
+        res.render("organisation", {
+            n: data.name,
+            st: "none",
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("organisation", {
+            st: "none",
+            loggedin: false
+        });
+    }
+    
 })
 
 app.post("/company", async (req, res) => {
@@ -146,10 +181,114 @@ app.post("/company", async (req, res) => {
 
 var match = false;
 
+// const Data = null;
+app.post("/sell", upload, async (req, res) => {
+    
+    try{
+
+        let id;
+
+        let data = await seller.find({});
+        const orgCity = await buyer.find({city: req.body.city});
+
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var d = await user.findOne({_id: verify._id});
+
+        if(data.length == 0)
+        {
+            id = 1111;
+        }
+        else{
+            let max = data[0].wasteId;
+            for(i=1;i<data.length;i++)
+            {
+                if(max < data[i].wasteId)
+                {
+                    max = data[i].wasteId;
+                }
+            }
+            id = max+1;
+        }
+
+        const newSeller = new seller({
+            wasteId: id,
+            name: req.body.name.toLowerCase(),
+            city: req.body.city.toLowerCase(),
+            description: req.body.description.toLowerCase(),
+            email: req.body.email,
+            phone: req.body.phone,
+            status: `Waiting for buyer`.toLowerCase(),
+            img: req.file.filename
+        })
+        const userName = req.body.name;
+        // Data = userName;
+        
+        const result = await newSeller.save();
+
+        //console.log(orgCity);
+    
+        if(orgCity[0].city)
+        {
+        
+            const orgMail = {
+                from: req.body.email,
+                to: orgCity[0].email,
+                subject: `${id} Waste Found`,
+                text: `${req.body.name} is selling their waste(waste id - ${id}) please collect it from ${req.body.city}. His contact number is - ${req.body.phone} and Email id is - ${req.body.email}`
+            }
+
+            const sellerMail = {
+                from: req.body.email,
+                to: req.body.email,
+                subject: "Thank you for recycling your waste",
+                text: `Dear ${req.body.name} thank you for recycling. Your waste id is ${id}`
+            }
+    
+            console.log("Data successfully inserted");
+    
+            res.render("form", {
+                n: d.name,
+                successMsg: "Thank you for recycling your waste",
+                loggedin: true
+            });
+
+            transporter.sendMail(sellerMail, (error, info) => {
+                if(error){
+                    console.log(error)
+                }
+                else{
+                    console.log("Mail sended to seller");
+                }
+            })
+            
+            transporter.sendMail(orgMail, (error, info) => {
+                if(error){
+                    console.log(error);
+                }else{
+                    console.log("Mail sended to organisation");
+                }
+            })
+        }
+    }catch(error){
+
+        console.log(error);
+        res.render("form", {
+            failMsg: "Service is currently not available in your city",
+            loggedin: true
+        });
+    }
+});
+
 app.post("/org", async (req, res) => {
 
     try{
-        let t = await data.available(req, res, buyer);
+        var city = req.body.city;
+        let t = await buyer.find({city});
+
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
         //console.log(t);
         
         let msg = "";
@@ -162,20 +301,36 @@ app.post("/org", async (req, res) => {
         //console.log(msg);
 
         res.render("organisation", {
+            n: data.name,
             org: t,
-            msg: msg
+            msg: msg,
+            loggedin: true
         });
     }
     catch(error){
-        res.render("organisation");
+        res.render("organisation", {
+            loggedin: true
+        });
         //console.log(error);
     }
-    //console.log(t[0].orgName);
-
 });
 
-app.get("/checkStatus", (req, res) => {
-    res.render("checkStatus");
+app.get("/checkStatus" , async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
+
+        res.render("checkStatus", {
+            n: data.name,
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("checkStatus", {
+            loggedin: false
+        });
+    }
 });
 
 app.post("/checkStatus", async (req, res) => {
@@ -186,19 +341,26 @@ app.post("/checkStatus", async (req, res) => {
 
         let data = await seller.find({wasteId: wasteId});
 
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var d = await user.findOne({_id: verify._id});
+
         //console.log(data);
 
         if(data.length == 1)
         {
             res.render("checkStatus", {
+                n: d.name,
                 msg: `Current Status - ${data[0].status}`,
-                id: req.body.id
+                id: req.body.id,
+                loggedin: true
             })
         }
         else{
             res.render("checkStatus", {
                 error: `No waste found`,
-                id: req.body.id
+                id: req.body.id,
+                loggedin: true
             })
         }
 
@@ -210,6 +372,7 @@ app.post("/checkStatus", async (req, res) => {
 })
 
 app.get("/updateStatus", (req, res) => {
+    //console.log("My cookie is "+req.cookies.jwt);
     res.render("updateStatus");
 });
 
@@ -332,18 +495,17 @@ app.post("/signup", async(req, res) => {
             pincode: req.body.pincode
         });
 
+        const token = await newUser.generateAuthToken();
+        //console.log(token);
+
+        res.cookie("jwt", token);
+
         const userData = await newUser.save();
-        var name = userData.name;
-        var address = userData.address;
-        var city = userData.city;
-        var pincode = userData.pincode;
-        var email = userData.email;
+
         res.render("profile", {
-            n: name,
-            add: address,
-            ci : city,
-            pin: pincode,
-            em: email
+            n: req.body.name,
+            e: req.body.email,
+            loggedin: true
         });
         
     } catch (error) {
@@ -352,11 +514,25 @@ app.post("/signup", async(req, res) => {
 
 });
 
-app.get("/login", (req, res) => {
-    res.render("login");
+app.get("/login", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
+        res.render("login", {
+            n: data.name,
+            loggedin: true
+        });
+    }
+    catch(e){
+        res.render("login", {
+            loggedin: false
+        });
+    }
 });
 
 app.post("/login", async (req, res) => {
+
 
     try{
         var email = req.body.email;
@@ -368,6 +544,13 @@ app.post("/login", async (req, res) => {
 
         if(data)
         {
+            const token = await data.generateAuthToken();
+            //console.log(token);
+
+            res.cookie("jwt", token, {
+                httpOnly: true
+            });
+
             var hash = await bcrypt.compare(password, data.password, (err, resp) => {
                 var name = data.name;
                 var address = data.address;
@@ -379,10 +562,8 @@ app.post("/login", async (req, res) => {
                     console.log("Password match");
                     res.render("profile", {
                         n: name,
-                        add: address,
-                        ci : city,
-                        pin: pincode,
-                        em: email
+                        e: email,
+                        loggedin: true
                     });
                 }
                 else{
@@ -462,6 +643,46 @@ app.post("/sell", async (req, res) => {
         });
     }
 });
+
+app.get("/profile", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        var data = await user.findOne({_id: verify._id});
+        var name = data.name;
+        var email = data.email;
+        res.render("profile", {
+            n: name,
+            e: email
+        });
+    }
+    catch(e){
+        console.log(e);
+    }
+})
+
+app.get("/logout", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+
+        const data = await user.findOne({_id: verify._id});
+
+        data.tokens = data.tokens.filter((d) => {
+            return d.token != token;
+        })
+
+        res.clearCookie("jwt");
+        await data.save();
+
+        res.render("login", {
+            loggedin: false
+        });
+    }
+    catch(e){
+        console.log(e);
+    }
+})
 
 app.listen(port, () => {
     console.log("Server is running on port number 8000");
