@@ -67,13 +67,20 @@ hbs.registerPartials(partial);
 app.get("/", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
-        
-        res.render("recyclepage", {
-            n: data.name,
-            loggedin: true
-        });
+        var orgData = await org.findOne({_id: verify._id});
+        if(data) {
+            res.render("recyclepage", {
+                n: data.name,
+                loggedin: true, 
+            });
+        } else if(orgData){
+            res.render("recyclepage", {
+                n:orgData.name,
+                orgLoggedin: true
+            })
+        }
     }
     catch(e){
         res.render("recyclepage");
@@ -83,7 +90,7 @@ app.get("/", async (req, res) => {
 app.get("/sell", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
         res.render("form", {
             n: data.name,
@@ -101,7 +108,7 @@ app.get("/sell", async (req, res) => {
 app.get("/company", (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         res.render("company", {
             loggedin: true
         });
@@ -116,7 +123,7 @@ app.get("/company", (req, res) => {
 app.get("/buy", (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         res.render("buy", {
             loggedin: true
         });
@@ -131,7 +138,7 @@ app.get("/buy", (req, res) => {
 app.get("/org", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
         res.render("organisation", {
             n: data.name,
@@ -148,36 +155,36 @@ app.get("/org", async (req, res) => {
     
 })
 
-app.post("/company", async (req, res) => {
+// app.post("/company", async (req, res) => {
 
-    const newBuyer = new buyer({
-        orgName: req.body.orgName,
-        city: req.body.city,
-        description: req.body.description,
-        email: req.body.email,
-        phone: req.body.phone
-    });
+//     const newBuyer = new buyer({
+//         orgName: req.body.orgName,
+//         city: req.body.city,
+//         description: req.body.description,
+//         email: req.body.email,
+//         phone: req.body.phone
+//     });
 
-    const result = await newBuyer.save();
-    //console.log(req.body.email);
+//     const result = await newBuyer.save();
+//     //console.log(req.body.email);
 
-    if(result){
+//     if(result){
 
-        console.log("Data successfully inserted");
+//         console.log("Data successfully inserted");
 
-        res.render("company", {
-            successMsg: "Registered Successfully"
-        });
-    }
-    else{
-        console.log("Fail to insert data");
+//         res.render("company", {
+//             successMsg: "Registered Successfully"
+//         });
+//     }
+//     else{
+//         console.log("Fail to insert data");
 
-        res.render("company", {
-            failMsg: "Failed to registered. Please try again"
-        });
-    }
+//         res.render("company", {
+//             failMsg: "Failed to registered. Please try again"
+//         });
+//     }
 
-})
+// })
 
 var match = false;
 
@@ -192,7 +199,7 @@ app.post("/sell", upload, async (req, res) => {
         const orgCity = await buyer.find({city: req.body.city});
 
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var d = await user.findOne({_id: verify._id});
 
         if(data.length == 0)
@@ -287,7 +294,7 @@ app.post("/org", async (req, res) => {
         let t = await buyer.find({city});
 
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
         //console.log(t);
         
@@ -318,7 +325,7 @@ app.post("/org", async (req, res) => {
 app.get("/checkStatus" , async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
 
         res.render("checkStatus", {
@@ -342,7 +349,7 @@ app.post("/checkStatus", async (req, res) => {
         let data = await seller.find({wasteId: wasteId});
 
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var d = await user.findOne({_id: verify._id});
 
         //console.log(data);
@@ -371,9 +378,15 @@ app.post("/checkStatus", async (req, res) => {
     }
 })
 
-app.get("/updateStatus", (req, res) => {
-    //console.log("My cookie is "+req.cookies.jwt);
-    res.render("updateStatus");
+app.get("/updateStatus", async(req, res) => {
+    const token = req.cookies.jwt;
+    const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+    var data = await org.findOne({_id: verify._id});
+
+    res.render("updateStatus", {
+        n: data.name,
+        orgLoggedin: true
+    });
 });
 
 app.post("/updateStatus", async (req, res) => {
@@ -382,18 +395,23 @@ app.post("/updateStatus", async (req, res) => {
     var status = req.body.status;
 
     let data = await seller.find({wasteId: id});
+    const token = req.cookies.jwt;
+    const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+    var d = await user.findOne({_id: verify._id});
     if(data.length == 1)
     {
         await seller.updateOne({wasteId: id}, {status: status});
 
         res.render("updateStatus", {
-            msg: "Updated"
+            msg: "Updated",
+            orgLoggedin: true
         });
         
     }
     else{
         res.render("updateStatus", {
-            error: "Wrong waste id"
+            error: "Wrong waste id",
+            orgLoggedin: false
         });
     }
     
@@ -475,11 +493,11 @@ app.post("/changeStatus", async(req, res) => {
 
 });
 
-app.get("/signup", (req, res) => {
+app.get("/userSignup", (req, res) => {
     res.render("signup");
 });
 
-app.post("/signup", async(req, res) => {
+app.post("/userSignup", async(req, res) => {
 
     try {
 
@@ -514,10 +532,55 @@ app.post("/signup", async(req, res) => {
 
 });
 
-app.get("/login", async (req, res) => {
+app.get("/orgSignup", (req, res) => {
+    
+    
+    res.render("orgSignup");
+})
+
+app.post("/orgSignup", async(req, res) => {
+    try {
+        pass = await bcrypt.hash(req.body.password, 10);
+
+        const newOrg = new org({
+            name: req.body.name,
+            orgName: req.body.orgName,
+            password: pass,
+            email: req.body.email,
+            phone: req.body.phone,
+            address: req.body.address,
+            city: req.body.city,
+            pincode: req.body.pincode            
+        });
+
+        const token = await newOrg.generateAuthToken();
+        res.cookie("jwt", token);
+
+        const orgData = await newOrg.save();
+
+        var status = 'waiting for buyer';
+
+        var data = await seller.find({status: status});
+
+        //console.log(data);
+
+        res.render("organisationHome", {
+            data: data,
+            n: req.body.name,
+            e: req.body.email,
+            orgLoggedin: true
+        });
+
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+
+app.get("/userLogin", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
         res.render("login", {
             n: data.name,
@@ -531,7 +594,7 @@ app.get("/login", async (req, res) => {
     }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/userLogin", async (req, res) => {
 
 
     try{
@@ -552,11 +615,10 @@ app.post("/login", async (req, res) => {
             });
 
             var hash = await bcrypt.compare(password, data.password, (err, resp) => {
+                
                 var name = data.name;
-                var address = data.address;
-                var city = data.city;
-                var pincode = data.pincode;
                 var email = data.email;
+
                 if(resp == true)
                 {
                     console.log("Password match");
@@ -587,6 +649,95 @@ app.post("/login", async (req, res) => {
     }
 
 });
+
+app.get("/orgLogin", async (req, res) => {
+    try{
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+        var data = await org.findOne({_id: verify._id});
+        res.render("orgLogin", {
+            n: data.name,
+            orgLoggedin: true
+        });
+    }
+    catch(e){
+        res.render("orgLogin", {
+            loggedin: false
+        });
+    }
+});
+
+
+app.post("/orgLogin", async (req, res) => {
+    try{
+        var email = req.body.email;
+        var password = req.body.password;
+
+        var data = await org.findOne({email});
+        console.log(data);
+        if(data)
+        {
+            const token = await data.generateAuthToken();
+            //console.log(token);
+
+            res.cookie("jwt", token, {
+                httpOnly: true
+            });
+
+            var hash = await bcrypt.compare(password, data.password, async (err, resp) => {
+                
+                var name = data.name;
+                var email = data.email;
+
+                var status = 'waiting for buyer';
+
+                var orgdata = await seller.find({status: status});
+
+                //console.log(data);
+
+                // res.render("organisationHome", {
+                //     data: data,
+                //     n: req.body.name,
+                //     e: req.body.email,
+                //     orgLoggedin: true
+                // });
+                if(resp == true )
+                {
+                    console.log("Password match");
+                    res.render("organisationHome", {
+                        data: orgdata,
+                        n: name,
+                        e: email,
+                        orgLoggedin: true
+                    });
+                }
+                else{
+                    console.log("Password not match");
+                    res.render("orgLogin", {
+                        msg: "Incorrect Password"
+                    });
+                }
+            });
+        }
+        else{
+            res.render("orgLogin", {
+                msg: "Invalid email"
+            })
+        }
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+
+});
+
+
+
+
+
+
+
 
 app.get("/sell", (req, res) => {
     res.render("form");
@@ -647,7 +798,7 @@ app.post("/sell", async (req, res) => {
 app.get("/profile", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
         var name = data.name;
         var email = data.email;
@@ -664,20 +815,33 @@ app.get("/profile", async (req, res) => {
 app.get("/logout", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
 
         const data = await user.findOne({_id: verify._id});
+        const orgData = await org.findOne({_id: verify._id});
 
+        if(data){
         data.tokens = data.tokens.filter((d) => {
             return d.token != token;
         })
-
+        
         res.clearCookie("jwt");
         await data.save();
-
         res.render("login", {
             loggedin: false
         });
+        }
+        else if(orgData){
+        orgData.tokens = orgData.tokens.filter((d) => {
+        return d.token != token;
+
+        })
+        res.clearCookie("jwt");
+        await orgData.save();
+        res.render("orgLogin", {
+            orgLoggedin: false
+        });
+        }
     }
     catch(e){
         console.log(e);

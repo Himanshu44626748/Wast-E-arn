@@ -26,6 +26,8 @@
     
     {{#if loggedin}}
       {{>userHeader}}
+    {{else if orgLoggedin}}
+      {{>orgHeader}}
     {{else}}
       {{>header}}
     {{/if}}

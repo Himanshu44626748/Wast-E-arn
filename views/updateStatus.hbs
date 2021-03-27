@@ -38,7 +38,11 @@
 </head>
 <body>
     
+    {{#if orgLoggedin}}
+    {{> orgHeader}}
+    {{else}}
     {{> header}}
+    {{/if}}
 
     <div class="container mt-5" id="main" style="padding-left: 20%;">
         <form action="/updateStatus" method="POST">

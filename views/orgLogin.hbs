@@ -16,23 +16,25 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.0.7/dist/ethers.umd.js"></script>
+    <script src="https://unpkg.com/streamr-client@4.1.0-beta.0/dist/streamr-client.web.js"></script>
 <title>wasteEarn</title>
 </head>
 <body>
-
 
 {{> header}}
 
   <div class="container">
     <div class="main">
     <div class="extra">
-
-    
     </div>
     
 <div class="login-page">
-  <div class="form" style="width">
-    <form class="login-form" action="/userSignup" method="POST">
+
+  <h5 class="text-danger" style="text-align: center;">{{msg}}</h5>
+
+  <div class="form">
+    <form class="register-form" action="/orgLogin" method="POST">
       <input type="text" placeholder="Name" name="name"/>
       <input type="password" placeholder="Password" name="password"/>
       <input type="text" placeholder="Email address" name="email"/>
@@ -42,20 +44,19 @@
       <input type="text" placeholder="Pincode" name="pincode"/>
 
       <button>create</button>
-      <p class="message">Already registered? <a href="userLogin">Sign In</a></p>
+      <p class="message">Already registered? <a href="orgLogin">Sign In</a></p>
     </form>
-    <form class="register-form"  action = '/userLogin' method="POST" >
+    <form class="login-form"  action = '/orgLogin' method="POST" >
       <input type="text" placeholder="Email" name="email"/>
       <input type="password" placeholder="Password" name="password"/>
-      <button>login</button>
-      <p class="message">Not registered? <a href="userSignup">Create an account</a></p>
+      <button >login</button>
+      <p class="message">Not registered? <a href="orgSignup">Create an account</a></p>
     </form>
   </div>
 </div>
 
 
 </div>
-
   </div>
 
 {{>footer}}

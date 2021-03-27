@@ -32,7 +32,7 @@
     
 <div class="login-page">
   <div class="form" style="width">
-    <form class="login-form" action="/userSignup" method="POST">
+    <form class="login-form" action="/orgSignup" method="POST">
       <input type="text" placeholder="Name" name="name"/>
       <input type="password" placeholder="Password" name="password"/>
       <input type="text" placeholder="Email address" name="email"/>
@@ -42,13 +42,13 @@
       <input type="text" placeholder="Pincode" name="pincode"/>
 
       <button>create</button>
-      <p class="message">Already registered? <a href="userLogin">Sign In</a></p>
+      <p class="message">Already registered? <a href="orgLogin">Sign In</a></p>
     </form>
-    <form class="register-form"  action = '/userLogin' method="POST" >
+    <form class="register-form"  action = '/orgLogin' method="POST" >
       <input type="text" placeholder="Email" name="email"/>
       <input type="password" placeholder="Password" name="password"/>
       <button>login</button>
-      <p class="message">Not registered? <a href="userSignup">Create an account</a></p>
+      <p class="message">Not registered? <a href="orgSignup">Create an account</a></p>
     </form>
   </div>
 </div>
