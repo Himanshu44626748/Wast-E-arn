@@ -79,19 +79,19 @@
                 <thead>
                     <tr>
                         <th>Organisation</th>
-                        <th>Description</th>
                         <th>City</th>
-                        <th>Contacts</th>
+                        <th>Phone</th>
+                        <th>Email</th>
                     </tr>
                 </thead>
 
                 {{#each org}}
                 <tbody>
                     <tr class="orgList">
-                        <td>{{this.orgName}}</td>
-                        <td>{{this.description}}</td>
-                        <td>{{this.city}}</td>
-                        <td>{{this.email}},  {{this.phone}}</td>
+                        <td style="text-transform: capitalize;">{{this.name}}</td>
+                        <td style="text-transform: capitalize;">{{this.city}}</td>
+                        <td>{{this.phone}}</td>
+                        <td>{{this.email}}</td>
                     </tr>
                 </tbody>
                 {{/each}}

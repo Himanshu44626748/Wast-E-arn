@@ -8,7 +8,6 @@ const app = express();
 const multer = require("multer");
 const buyer = require("../models/organisation");
 const user = require('../models/user');
-const seller = require('../models/seller');
 const profile = require('./profile');
 const auth = require('../middleware/auth');
 const connectDB = require('../config/db');
@@ -155,37 +154,6 @@ app.get("/org", async (req, res) => {
     
 })
 
-// app.post("/company", async (req, res) => {
-
-//     const newBuyer = new buyer({
-//         orgName: req.body.orgName,
-//         city: req.body.city,
-//         description: req.body.description,
-//         email: req.body.email,
-//         phone: req.body.phone
-//     });
-
-//     const result = await newBuyer.save();
-//     //console.log(req.body.email);
-
-//     if(result){
-
-//         console.log("Data successfully inserted");
-
-//         res.render("company", {
-//             successMsg: "Registered Successfully"
-//         });
-//     }
-//     else{
-//         console.log("Fail to insert data");
-
-//         res.render("company", {
-//             failMsg: "Failed to registered. Please try again"
-//         });
-//     }
-
-// })
-
 var match = false;
 
 // const Data = null;
@@ -193,90 +161,33 @@ app.post("/sell", upload, async (req, res) => {
     
     try{
 
-        let id;
-
-        let data = await seller.find({});
-        const orgCity = await buyer.find({city: req.body.city});
 
         const token = req.cookies.jwt;
         const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var d = await user.findOne({_id: verify._id});
 
-        if(data.length == 0)
-        {
-            id = 1111;
-        }
-        else{
-            let max = data[0].wasteId;
-            for(i=1;i<data.length;i++)
-            {
-                if(max < data[i].wasteId)
-                {
-                    max = data[i].wasteId;
-                }
-            }
-            id = max+1;
-        }
 
-        const newSeller = new seller({
-            wasteId: id,
-            name: req.body.name.toLowerCase(),
-            city: req.body.city.toLowerCase(),
-            description: req.body.description.toLowerCase(),
-            email: req.body.email,
-            phone: req.body.phone,
-            status: `Waiting for buyer`.toLowerCase(),
-            img: req.file.filename
-        })
-        const userName = req.body.name;
+        var type = req.body.type.toLowerCase()
+        var address = req.body.address.toLowerCase()
+        var city = req.body.city.toLowerCase()
+        var state = req.body.state.toLowerCase()
+        var status = `Waiting for buyer`.toLowerCase()
+        var img = req.file.filename
+
         // Data = userName;
-        
-        const result = await newSeller.save();
+
+        //console.log(d);
+
+        await d.createNewSell(type, address, city, state, status, img);
 
         //console.log(orgCity);
     
-        if(orgCity[0].city)
-        {
-        
-            const orgMail = {
-                from: req.body.email,
-                to: orgCity[0].email,
-                subject: `${id} Waste Found`,
-                text: `${req.body.name} is selling their waste(waste id - ${id}) please collect it from ${req.body.city}. His contact number is - ${req.body.phone} and Email id is - ${req.body.email}`
-            }
+        res.render("form", {
+            n: d.name,
+            successMsg: "Thank you for recycling your waste",
+            loggedin: true
+        });
 
-            const sellerMail = {
-                from: req.body.email,
-                to: req.body.email,
-                subject: "Thank you for recycling your waste",
-                text: `Dear ${req.body.name} thank you for recycling. Your waste id is ${id}`
-            }
-    
-            console.log("Data successfully inserted");
-    
-            res.render("form", {
-                n: d.name,
-                successMsg: "Thank you for recycling your waste",
-                loggedin: true
-            });
-
-            transporter.sendMail(sellerMail, (error, info) => {
-                if(error){
-                    console.log(error)
-                }
-                else{
-                    console.log("Mail sended to seller");
-                }
-            })
-            
-            transporter.sendMail(orgMail, (error, info) => {
-                if(error){
-                    console.log(error);
-                }else{
-                    console.log("Mail sended to organisation");
-                }
-            })
-        }
     }catch(error){
 
         console.log(error);
@@ -290,8 +201,8 @@ app.post("/sell", upload, async (req, res) => {
 app.post("/org", async (req, res) => {
 
     try{
-        var city = req.body.city;
-        let t = await buyer.find({city});
+        var city = req.body.city.toLowerCase();
+        let t = await org.find({city});
 
         const token = req.cookies.jwt;
         const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
@@ -328,10 +239,23 @@ app.get("/checkStatus" , async (req, res) => {
         const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         var data = await user.findOne({_id: verify._id});
 
-        res.render("checkStatus", {
-            n: data.name,
-            loggedin: true
-        });
+        var wastes = data.wastes;
+
+        if(wastes.length >= 1)
+        {
+            res.render("checkStatus", {
+                n: data.name,
+                waste: wastes,
+                loggedin: true
+            })
+        }
+        else{
+            res.render("checkStatus", {
+                n: data.name,
+                waste: wastes,
+                loggedin: true
+            })
+        }
     }
     catch(e){
         res.render("checkStatus", {
@@ -339,44 +263,6 @@ app.get("/checkStatus" , async (req, res) => {
         });
     }
 });
-
-app.post("/checkStatus", async (req, res) => {
-
-    try{
-
-        let wasteId = req.body.id;
-
-        let data = await seller.find({wasteId: wasteId});
-
-        const token = req.cookies.jwt;
-        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
-        var d = await user.findOne({_id: verify._id});
-
-        //console.log(data);
-
-        if(data.length == 1)
-        {
-            res.render("checkStatus", {
-                n: d.name,
-                msg: `Current Status - ${data[0].status}`,
-                id: req.body.id,
-                loggedin: true
-            })
-        }
-        else{
-            res.render("checkStatus", {
-                error: `No waste found`,
-                id: req.body.id,
-                loggedin: true
-            })
-        }
-
-    }
-    catch(error)
-    {
-        console.log(error);
-    }
-})
 
 app.get("/updateStatus", async(req, res) => {
     const token = req.cookies.jwt;
@@ -391,30 +277,48 @@ app.get("/updateStatus", async(req, res) => {
 
 app.post("/updateStatus", async (req, res) => {
 
-    var id = req.body.id;
-    var status = req.body.status;
+    try{
+        var id = req.body.id;
+        var status = req.body.status.toLowerCase();
 
-    let data = await seller.find({wasteId: id});
-    const token = req.cookies.jwt;
-    const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
-    var d = await user.findOne({_id: verify._id});
-    if(data.length == 1)
-    {
-        await seller.updateOne({wasteId: id}, {status: status});
+        var data = await user.findOne({wastes:{$elemMatch:{_id: id}}});
 
-        res.render("updateStatus", {
-            msg: "Updated",
-            orgLoggedin: true
-        });
-        
-    }
-    else{
-        res.render("updateStatus", {
-            error: "Wrong waste id",
-            orgLoggedin: false
-        });
-    }
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+        var d = await org.findOne({_id: verify._id});
+
+        if(data.wastes.length > 0)
+        {
+            for(i=0;i<data.wastes.length;i++)
+            {
+                if(req.body.id == data.wastes[i]._id)
+                {
+                    data.wastes[i].status = status
+                }
+            }
+
+            await data.save();
+
+            res.render("updateStatus", {
+                msg: "Updated",
+                n: d.name,
+                orgLoggedin: true
+            });
+            
+        }
+        else{
+            res.render("updateStatus", {
+                error: "Wrong waste id",
+                n: d.name,
+                orgLoggedin: true
+            });
+        }
     
+    }
+    catch(e)
+    {
+        console.log(e)
+    }
 
 });
 
@@ -422,12 +326,37 @@ app.get("/orgHome", async(req, res) => {
 
     var status = 'waiting for buyer';
 
-    var data = await seller.find({status: status});
+    const token = req.cookies.jwt;
+    const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+    var d = await org.findOne({_id: verify._id});
 
-    //console.log(data);
+    var data = await user.find();
+
+    var arr = [];
+
+    for(i=0;i<data.length;i++)
+    {
+        var w = data[i].wastes.length;
+        for(j=0;j<w;j++)
+        {
+            if(data[i].wastes[j].status === status)
+            {
+                arr.push({
+                    id: `${data[i].wastes[j]._id}`,
+                    name: data[i].name,
+                    email: data[i].email,
+                    phone: data[i].phone,
+                    city: data[i].wastes[j].city,
+                    type: data[i].wastes[j].type,
+                    img: data[i].wastes[j].img
+                })
+            }
+        }
+    }
 
     res.render("organisationHome", {
-        data: data
+        data: arr,
+        n: d.name
     });
 });
 
@@ -435,44 +364,97 @@ app.post("/orgHome", async(req, res) => {
 
     try{
 
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+        var d = await org.findOne({_id: verify._id});
+
         var filter = req.body.filter.toLowerCase();
 
         var status = 'waiting for buyer';
 
         if(filter === "bio" || filter === "metal" || filter === "plastic" || filter === "paper")
         {
-            var data = await seller.find({status: status, description: filter});
+            var data = await user.find();
 
-            //console.log(filter);
+            var arr = []
+
+            for(i=0;i<data.length;i++)
+            {
+                var w = data[i].wastes.length;
+
+                for(j=0;j<w;j++)
+                {
+                    if(data[i].wastes[j].type === filter)
+                    {
+                        arr.push({
+                            id: data[i].wastes[j]._id,
+                            name: data[i].name,
+                            email: data[i].email,
+                            phone: data[i].phone,
+                            city: data[i].wastes[j].city,
+                            type: data[i].wastes[j].type,
+                            img: data[i].wastes[j].img
+                        })
+                    }
+                }
+            }
+
+            //console.log(data);
 
             if(data.length == 0)
             {
                 res.render("organisationHome", {
-                    msg: "No Waste Found"
+                    msg: "No Waste Found",
+                    n: d.name
                 });
             }
 
             else{
                 res.render("organisationHome", {
-                    data: data
+                    data: arr,
+                    n: d.name
                 });
             }
         }
         else{
-            var data = await seller.find({status: status, city: filter});
+            
+            var data = await user.find();
 
-            //console.log(filter);
+            var arr = []
+
+            for(i=0;i<data.length;i++)
+            {
+                var w = data[i].wastes.length;
+
+                for(j=0;j<w;j++)
+                {
+                    if(data[i].wastes[j].city === filter)
+                    {
+                        arr.push({
+                            id: data[i].wastes[j]._id,
+                            name: data[i].name,
+                            email: data[i].email,
+                            phone: data[i].phone,
+                            city: data[i].wastes[j].city,
+                            type: data[i].wastes[j].type,
+                            img: data[i].wastes[j].img
+                        })
+                    }
+                }
+            }
             
             if(data.length == 0)
             {
                 res.render("organisationHome", {
-                    msg: "No Waste Found"
+                    msg: "No Waste Found",
+                    n: d.name
                 });
             }
 
             else{
                 res.render("organisationHome", {
-                    data: data
+                    data: arr,
+                    n: d.name
                 });
             }
         }
@@ -487,9 +469,57 @@ app.post("/orgHome", async(req, res) => {
 
 app.post("/changeStatus", async(req, res) => {
 
-    var data = await seller.find({wasteId: wasteId});
+    try{
+        
+        var data = await user.findOne({wastes:{$elemMatch:{_id: req.body.wasteId}}});
 
-    //await seller.updateOne({wasteId: wasteId}, {status: `${data[0].}`});
+        const token = req.cookies.jwt;
+        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+        const orgData = await org.findOne({_id: verify._id});
+      
+        for(i=0;i<data.wastes.length;i++)
+        {
+            if(req.body.wasteId == data.wastes[i]._id)
+            {
+                data.wastes[i].status = `Processing under ${orgData.name}`
+            }
+        }
+
+        await data.save();
+
+        var status = 'waiting for buyer';
+        const d = await user.find();
+
+        var arr = [];
+
+        for(i=0;i<d.length;i++)
+        {
+            var w = d[i].wastes.length;
+            for(j=0;j<w;j++)
+            {
+                if(d[i].wastes[j].status === status)
+                {
+                    arr.push({
+                        id: d[i].wastes[j]._id,
+                        name: d[i].name,
+                        email: d[i].email,
+                        phone: d[i].phone,
+                        city: d[i].wastes[j].city,
+                        type: d[i].wastes[j].type,
+                        img: d[i].wastes[j].img
+                    })
+                }
+            }
+        }
+        res.render("organisationHome", {
+            data: arr,
+            n: orgData.name
+        });
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
 
 });
 
@@ -504,12 +534,12 @@ app.post("/userSignup", async(req, res) => {
         pass = await bcrypt.hash(req.body.password, 10);
 
         const newUser = new user({
-            name: req.body.name,
+            name: req.body.name.toLowerCase(),
             password: pass,
             email: req.body.email,
             phone: req.body.phone,
-            address: req.body.address,
-            city: req.body.city,
+            address: req.body.address.toLowerCase(),
+            city: req.body.city.toLowerCase(),
             pincode: req.body.pincode
         });
 
@@ -533,8 +563,6 @@ app.post("/userSignup", async(req, res) => {
 });
 
 app.get("/orgSignup", (req, res) => {
-    
-    
     res.render("orgSignup");
 })
 
@@ -543,13 +571,13 @@ app.post("/orgSignup", async(req, res) => {
         pass = await bcrypt.hash(req.body.password, 10);
 
         const newOrg = new org({
-            name: req.body.name,
-            orgName: req.body.orgName,
+            name: req.body.name.toLowerCase(),
+            orgName: req.body.orgName.toLowerCase(),
             password: pass,
             email: req.body.email,
             phone: req.body.phone,
-            address: req.body.address,
-            city: req.body.city,
+            address: req.body.address.toLowerCase(),
+            city: req.body.city.toLowerCase(),
             pincode: req.body.pincode            
         });
 
@@ -560,14 +588,12 @@ app.post("/orgSignup", async(req, res) => {
 
         var status = 'waiting for buyer';
 
-        var data = await seller.find({status: status});
+        //var data = await seller.find({status: status});
 
         //console.log(data);
 
-        res.render("organisationHome", {
-            data: data,
+        res.render("recyclepage", {
             n: req.body.name,
-            e: req.body.email,
             orgLoggedin: true
         });
 
@@ -674,7 +700,7 @@ app.post("/orgLogin", async (req, res) => {
         var password = req.body.password;
 
         var data = await org.findOne({email});
-        console.log(data);
+        //console.log(data);
         if(data)
         {
             const token = await data.generateAuthToken();
@@ -691,7 +717,7 @@ app.post("/orgLogin", async (req, res) => {
 
                 var status = 'waiting for buyer';
 
-                var orgdata = await seller.find({status: status});
+                //var orgdata = await seller.find({status: status});
 
                 //console.log(data);
 
@@ -704,8 +730,7 @@ app.post("/orgLogin", async (req, res) => {
                 if(resp == true )
                 {
                     console.log("Password match");
-                    res.render("organisationHome", {
-                        data: orgdata,
+                    res.render("recyclepage", {
                         n: name,
                         e: email,
                         orgLoggedin: true
@@ -732,13 +757,6 @@ app.post("/orgLogin", async (req, res) => {
 
 });
 
-
-
-
-
-
-
-
 app.get("/sell", (req, res) => {
     res.render("form");
 });
@@ -748,9 +766,6 @@ app.post("/sell", async (req, res) => {
     try{
 
         let id;
-
-        let data = await seller.find({});
-        var userData = await user.findOne({email});
 
         if(data.length == 0)
         {
@@ -770,11 +785,9 @@ app.post("/sell", async (req, res) => {
 
         const newSeller = new seller({
             wasteId: id,
-            name: userData.name,
-            city: userData.city,
-            description: req.body.description.toLowerCase(),
-            email: userData.email,
-            phone: userData.phone,
+            type: req.body.type.toLowerCase(),
+            address: req.body.address.toLowerCase(),
+            city: req.body.city.toLowerCase(),
             status: `Waiting for buyer`.toLowerCase(),
             img: req.file.filename
         })

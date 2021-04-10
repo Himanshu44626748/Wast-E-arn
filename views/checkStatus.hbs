@@ -13,32 +13,31 @@
     <title>WastEarn</title>
 
     <style>
-    
-        @media only screen and (max-width: 600px)
-        {
-            form{
-                margin-left: 5%;
-            }
-            div{
-                padding-left: 0 !important;
-            }
-            label{
-                margin-left: 10%;
-                width: 80% !important;
-            }
-            #id{
-                width: 80% !important;
-            }
-            #check{
-                width: 40%;
-            }
+        table{
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 2%;
+            margin-bottom: 5%;
+            text-align: left;
         }
-
-        #msg{
-            text-align: center;
-            margin-top: 5%;
+        th{
+            padding-top: 1%;
+            padding-bottom: 1%;
+            color: white;
+            background-color: #4CAF50;
+        }
+        td{
+            padding-top: 1%;
+            padding-bottom: 1%;
+        }
+        tr:nth-child(even){
+            background-color: #f2f2f2;
+        }
+        tr:hover{
+            background-color: #ddd;
         }
     </style>
+
 </head>
 <body>
     
@@ -48,30 +47,38 @@
       {{>header}}
     {{/if}}
 
-    <div class="container mt-5" style="padding-left: 20%;">
-        <form action="/checkStatus" method="POST" class="form-inline">
-            <label for="id" class="mb-2 mr-sm-4">Waste ID: </label>
-            <input type="text" class="form-control mb-2 mr-sm-4" style="width: 40%;" name="id" id="id" required>
-            
-            <input type="submit" class="btn btn-success mb-2" id="check" value="Check" />
-        </form>
+    <div class="container">
+
+        <h2 class="text-success my-3" style="text-align: center;">My Wastes</h2>
+
+        <div class="container table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Address</th>
+                        <th>City</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                {{#each waste}}
+                <tbody>
+                    <tr class="orgList">
+                        <td style="text-transform: capitalize;">{{this.type}}</td>
+                        <td style="text-transform: capitalize;">{{this.address}}</td>
+                        <td style="text-transform: capitalize;">{{this.city}}</td>
+                        <td style="text-transform: capitalize;">{{this.status}}</td>
+                    </tr>
+                </tbody>
+                {{/each}}
+
+            </table>
+        </div>
 
     </div>
 
-    <h5 id="msg">{{msg}}</h5>
-    <h5 class="text-danger" style="text-align: center;">{{error}}</h5>
-
     {{>footer}}
-
-    <script>
-
-        function myFunction()
-        {
-            document.getElementById("id").value = {{id}};
-        }
-
-        myFunction();
-    </script>
 
 </body>
 </html>

@@ -34,7 +34,7 @@
   <h5 class="text-danger" style="text-align: center;">{{msg}}</h5>
 
   <div class="form">
-    <form class="register-form" action="/login" method="POST">
+    <form class="register-form" action="/userLogin" method="POST">
       <input type="text" placeholder="Name" name="name"/>
       <input type="password" placeholder="Password" name="password"/>
       <input type="text" placeholder="Email address" name="email"/>
@@ -44,13 +44,13 @@
       <input type="text" placeholder="Pincode" name="pincode"/>
 
       <button>create</button>
-      <p class="message">Already registered? <a href="login">Sign In</a></p>
+      <p class="message">Already registered? <a href="/userLogin">Sign In</a></p>
     </form>
-    <form class="login-form"  action = '/login' method="POST" >
+    <form class="login-form"  action = "/userLogin" method="POST" >
       <input type="text" placeholder="Email" name="email"/>
       <input type="password" placeholder="Password" name="password"/>
       <button onclick="/profile/me">login</button>
-      <p class="message">Not registered? <a href="signup">Create an account</a></p>
+      <p class="message">Not registered? <a href="/userSignup">Create an account</a></p>
     </form>
   </div>
 </div>

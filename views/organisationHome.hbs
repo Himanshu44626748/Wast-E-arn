@@ -44,6 +44,7 @@
             }
         }
     </style>
+
 </head>
 <body>
 
@@ -52,7 +53,7 @@
     <div class="container my-5">
 
         <div class="div container mb-4" style="padding-left: 33%;">
-            <form action="/orgSignup" method="POST" class="form-inline">
+            <form action="/orgHome" method="POST" class="form-inline">
                 <input type="text" class="form-control mb-2 mr-sm-4" style="width: 40%;" name="filter" id="filter" placeholder="Search by city or waste type" required>
                 
                 <input type="submit" class="btn btn-success mb-2" id="search" value="Search" />
@@ -73,13 +74,14 @@
 
                         <div class="card-body">
 
-                            <h4 class="card-title" style="text-transform: capitalize;">{{this.description}}</h4>
+                            <h4 class="card-title" style="text-transform: capitalize;">{{this.type}}</h4>
                             
                             <h6 class="card-text" style="text-transform: capitalize;">{{this.name}}, {{this.city}}</h6>
 
                             <p>{{this.phone}}, {{this.email}}</p>
+                            <p style="font-size: small;"><strong>Waste ID - </strong>{{this.id}}</p>
                             
-                            <a type="button" class="btn btn-success btn-md" onclick="myFunction({{this.wasteId}})">Collect</a>
+                            <a type="submit" class="btn btn-success btn-md" onclick="myFunction('{{this.id}}')">Collect</a>
 
                         </div>
                     </div>
@@ -98,15 +100,13 @@
 
     function myFunction(id)
     {
-
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/changeStatus", true);
+        xhr.open("POST", "/changeStatus", false);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify({
             wasteId: id
         }));
-
-        console.log(id);
+        window.location.reload();
     }
 
 </script>
