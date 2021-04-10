@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Himanshu44626748/Wastearn.git"
+    "url": "https://github.com/Himanshu44626748/Wast-E-arn"
   },
   "author": "Himanshu Mishra, Deepak Parihar, Parth Sarode, Nikhil Singh",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Himanshu44626748/Wastearn/issues"
+    "url": "https://github.com/Himanshu44626748/Wast-E-arn/issues"
   },
-  "homepage": "https://github.com/Himanshu44626748/Wastearn#readme",
+  "homepage": "https://github.com/Himanshu44626748/Wast-E-arn#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
