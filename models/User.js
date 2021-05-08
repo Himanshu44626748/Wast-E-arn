@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
     address: String,
     city: String,
     pincode: Number,
+    coinsearned:Number,
+    coinsspent:Number,
+    coinsrem:Number,
     wastes: [{
         type: String,
         address: String,
@@ -21,7 +24,8 @@ const userSchema = new mongoose.Schema({
         token: String
     }],
 },
-{ typeKey: '$type' })
+{ typeKey: '$type' }
+)
 
 
 userSchema.methods.generateAuthToken = async function(){

@@ -1,3 +1,5 @@
+const user = require('../models/user');
+const org = require('../models/Organisation');
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -6,7 +8,6 @@ const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const app = express();
 const multer = require("multer");
-const user = require('../models/user');
 const connectDB = require('../config/db');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -471,15 +472,18 @@ app.post("/changeStatus", async(req, res) => {
         const token = req.cookies.jwt;
         const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
         const orgData = await org.findOne({_id: verify._id});
-      
+        console.log(req.body.credits);
         for(i=0;i<data.wastes.length;i++)
         {
             if(req.body.wasteId == data.wastes[i]._id)
             {
-                data.wastes[i].status = `Processing under ${orgData.name}`
+                data.wastes[i].status = `buyer org: ${orgData.name}`;
+                data.coinsearned = parseInt(req.body.credits)+data.coinsearned;
+                data.coinsrem = data.coinsearned-data.coinsspent;
             }
         }
 
+        console.log("Current status");
         await data.save();
 
         var status = 'waiting for buyer';
@@ -535,7 +539,10 @@ app.post("/userSignup", async(req, res) => {
             phone: req.body.phone,
             address: req.body.address.toLowerCase(),
             city: req.body.city.toLowerCase(),
-            pincode: req.body.pincode
+            pincode: req.body.pincode,
+            coinsearned: 0,
+            coinsspent: 0,
+            coinsrem: 0
         });
 
         const token = await newUser.generateAuthToken();
@@ -548,7 +555,10 @@ app.post("/userSignup", async(req, res) => {
         res.render("profile", {
             n: req.body.name,
             e: req.body.email,
-            loggedin: true
+            loggedin: true,
+            earned: 0,
+            spent: 0,
+            rem: 0
         });
         
     } catch (error) {
@@ -566,13 +576,13 @@ app.post("/orgSignup", async(req, res) => {
         pass = await bcrypt.hash(req.body.password, 10);
 
         const newOrg = new org({
-            name: req.body.name.toLowerCase(),
-            orgName: req.body.orgName.toLowerCase(),
+            name: await req.body.name,//.toLowerCase(),
+            orgName: await req.body.orgName,//.toLowerCase(),
             password: pass,
             email: req.body.email,
             phone: req.body.phone,
-            address: req.body.address.toLowerCase(),
-            city: req.body.city.toLowerCase(),
+            address: await req.body.address,//.toLowerCase(),
+            city: await req.body.city,//.toLowerCase(),
             pincode: req.body.pincode            
         });
 
@@ -639,14 +649,19 @@ app.post("/userLogin", async (req, res) => {
                 
                 var name = data.name;
                 var email = data.email;
-
+                var coinsearned = data.coinsearned;
+                var coinsrem = data.coinsrem;
+                var coinsspent = data.coinsspent;
                 if(resp == true)
                 {
                     console.log("Password match");
                     res.render("profile", {
                         n: name,
                         e: email,
-                        loggedin: true
+                        loggedin: true,
+                        earned: coinsearned,
+                        spent: coinsspent,
+                        rem: coinsrem
                     });
                 }
                 else{
@@ -810,9 +825,15 @@ app.get("/profile", async (req, res) => {
         var data = await user.findOne({_id: verify._id});
         var name = data.name;
         var email = data.email;
+        var coinsearned = data.coinsearned;
+        var coinsrem = data.coinsrem;
+        var coinsspent = data.coinsspent;
         res.render("profile", {
             n: name,
-            e: email
+            e: email,
+            earned: coinsearned,
+            spent: coinsspent,
+            rem: coinsrem
         });
     }
     catch(e){
@@ -823,7 +844,7 @@ app.get("/profile", async (req, res) => {
 app.get("/logout", async (req, res) => {
     try{
         const token = req.cookies.jwt;
-        const verify = jwt.verify(token, "wastearndevelopedbyteamblackpearl");
+        const verify = await jwt.verify(token, "wastearndevelopedbyteamblackpearl");
 
         const data = await user.findOne({_id: verify._id});
         const orgData = await org.findOne({_id: verify._id});
