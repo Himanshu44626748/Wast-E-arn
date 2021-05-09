@@ -477,9 +477,11 @@ app.post("/changeStatus", async(req, res) => {
         {
             if(req.body.wasteId == data.wastes[i]._id)
             {
-                data.wastes[i].status = `buyer org: ${orgData.name}`;
-                data.coinsearned = parseInt(req.body.credits)+data.coinsearned;
-                data.coinsrem = data.coinsearned-data.coinsspent;
+                if(req.body.credits!==NaN){
+                    data.wastes[i].status = `buyer org: ${orgData.name}`;
+                    data.coinsearned = parseInt(req.body.credits)+parseInt(data.coinsearned);
+                    data.coinsrem = parseInt(data.coinsearned)-parseInt(data.coinsspent);
+                }
             }
         }
 
